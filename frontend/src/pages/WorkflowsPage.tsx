@@ -1,3 +1,6 @@
+import { Link } from 'react-router-dom'
+import { mockWorkflows } from '../features/workflows/data/mockWorkflows'
+
 function WorkflowsPage() {
     return (
         <div className="page">
@@ -11,12 +14,17 @@ function WorkflowsPage() {
                 </button>
             </div>
 
-            <div className="empty-state">
-                <h3>No workflows yet</h3>
-                <p>Create your first workflow to get started.</p>
+            <div className="workflow-list">
+                {mockWorkflows.map((workflow) => (
+                    <Link key={workflow.id} to={`/workflows/${workflow.id}`} className="workflow-card">
+                        <div>
+                            <h3>{workflow.name}</h3>
+                            <p>{workflow.description}</p>
+                        </div>
+                        <span>Open</span>
+                    </Link>
+                ))}
             </div>
-
-            
         </div>
     )
 }

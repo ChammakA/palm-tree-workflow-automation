@@ -2,6 +2,7 @@ import {BrowserRouter, Navigate, Route, Routes} from "react-router-dom"
 import AppLayout from './components/layout/AppLayout'
 import Dashboard from './pages/DashboardPage'
 import WorkflowsPage from './pages/WorkflowsPage'
+import WorkflowEditorPage from './pages/WorkflowEditorPage'
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
         <Route element={<AppLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="workflows" element={<WorkflowsPage />} />
+          <Route path="workflows/:workflowId" element={<WorkflowEditorPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
