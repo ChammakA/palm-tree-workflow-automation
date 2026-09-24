@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { mockWorkflows } from '../features/workflows/data/mockWorkflows'
+import WorkflowCanvas from '../features/workflows/components/WorkflowCanvas'
 
 function WorkflowEditorPage() {
     const { workflowId } = useParams()
@@ -23,9 +24,7 @@ function WorkflowEditorPage() {
                 <h2>{workflow.name}</h2>
                 <p>{workflow.description}</p>
             </div>
-            <div className="workflow-editor-placeholder">
-                <p>Workflow canvas will go here.</p>
-            </div>
+            <WorkflowCanvas />
         </div>
     )
 }

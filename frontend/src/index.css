@@ -212,3 +212,60 @@ select {
   border-radius: 10px;
   color: #9ca3af;
 }
+
+.workflow-canvas {
+  width: 100%;
+  height: 600px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.workflow-node {
+  position: relative;
+  width: 220px;
+  padding: 16px;
+  background: #ffffff;
+  border: 2px solid #d1d5db;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.workflow-node-type {
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.workflow-node-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.workflow-node-description {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #6b7280;
+}
+
+.workflow-node-trigger {
+  border-left: 4px solid #2563eb;
+}
+
+.workflow-node-condition {
+  border-left: 4px solid #d97706;
+}
+
+.workflow-node-approval {
+  border-left: 4px solid #7c3aed;
+}
+
+.workflow-node-action {
+  border-left: 4px solid #059669;
+}
