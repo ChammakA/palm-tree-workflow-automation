@@ -214,12 +214,8 @@ select {
 }
 
 .workflow-canvas {
-  width: 100%;
-  height: 600px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  overflow: hidden;
+  flex: 1;
+  height: 100%;
 }
 
 .workflow-node {
@@ -268,4 +264,72 @@ select {
 
 .workflow-node-action {
   border-left: 4px solid #059669;
+}
+
+.workflow-editor {
+  display: flex;
+  width: 100%;
+  height: 600px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.node-palette {
+  width: 220px;
+  flex-shrink: 0;
+  padding: 18px;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+}
+
+.node-palette-header {
+  margin-bottom: 18px;
+}
+
+.node-palette-header h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.node-palette-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.node-palette-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.node-palette-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  padding: 12px;
+  text-align: left;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.node-palette-item:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.node-palette-item strong {
+  font-size: 13px;
+  color: #111827;
+}
+
+.node-palette-item span {
+  font-size: 11px;
+  color: #6b7280;
 }
