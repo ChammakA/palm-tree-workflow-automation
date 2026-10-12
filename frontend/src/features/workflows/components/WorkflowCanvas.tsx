@@ -5,6 +5,9 @@ import WorkflowNode from './nodes/WorkflowNode';
 import NodePalette from './NodePalette';
 import type { WorkflowNodeData, WorkflowNodeType } from '../types/workflowNode';
 
+import { useState } from 'react';
+import NodeConfigPanel from './NodeConfigPanel';
+
 const initialNodes: Node[] = [
     {
         id: '1',
@@ -80,6 +83,25 @@ function WorkflowCanvas() {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
+    const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+    const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? null;
+
+    const updateNode = (id: string, updates: Partial<WorkflowNodeData>) => {
+        setNodes((currentNodes) => currentNodes.map((node) => node.id === id ? {
+            ...node,
+            data: {
+                ...node.data,
+                ...updates,
+            }
+        } : node))
+    }
+
+    const deleteNode = (id: string) => {
+        setNodes((currentNodes) => currentNodes.filter((node) => node.id !== id))
+        setEdges((currentEdges) => currentEdges.filter((edge) => edge.source !== id && edge.target !== id))
+        setSelectedNodeId(null)
+    }
+
     const onConnect = (connection: Connection) => {
         setEdges((currentEdges) => addEdge(connection, currentEdges));
     }
@@ -113,12 +135,20 @@ function WorkflowCanvas() {
                     onEdgesChange={onEdgesChange} 
                     onConnect={onConnect} 
                     fitView
+                    onNodeClick={(_, node) => setSelectedNodeId(node.id)}
+                    onPaneClick={() => setSelectedNodeId(null)}
+                    onNodesDelete={(deletedNodes) => {
+                        if (deletedNodes.some((node) => node.id === selectedNodeId)) {
+                            setSelectedNodeId(null)
+                        }
+                    }}
                 >
                     <Background />
                     <Controls />
                     <MiniMap />
                 </ReactFlow>
             </div>
+            <NodeConfigPanel node={selectedNode} onUpdateNode={updateNode} onDeleteNode={deleteNode} />
             
         </div>
     )
