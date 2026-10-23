@@ -39,7 +39,7 @@ function NodeConfigPanel({ node, onUpdateNode, onDeleteNode }: NodeConfigPanelPr
                 <textarea id="node-description" rows={4} value={node.data.description ?? ''} onChange={(e) => onUpdateNode(node.id, { description: e.target.value})} />
             </div>
 
-            <button className="delete-button" type="button" onClick={() => onDeleteNode(node.id)}>Delete Node</button>
+            <button className="delete-node-button" type="button" onClick={() => onDeleteNode(node.id)}>Delete Node</button>
         </aside>
     )
 }

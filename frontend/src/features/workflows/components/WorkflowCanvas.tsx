@@ -1,14 +1,15 @@
-import { addEdge, Background, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, type Connection, type Edge, type Node } from '@xyflow/react';
+import { addEdge, Background, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, type Connection, type Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 import WorkflowNode from './nodes/WorkflowNode';
 import NodePalette from './NodePalette';
 import type { WorkflowNodeData, WorkflowNodeType } from '../types/workflowNode';
+import { loadWorkflowGraph, saveWorkflowGraph, type PalmTreeNode } from '../utils/workflowStorage';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import NodeConfigPanel from './NodeConfigPanel';
 
-const initialNodes: Node[] = [
+const initialNodes: PalmTreeNode[] = [
     {
         id: '1',
         type: 'trigger',
@@ -79,9 +80,14 @@ const nodeDefaults: Record<WorkflowNodeType, { label: string, description: strin
     }
 }
 
-function WorkflowCanvas() {
-    const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-    const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+interface WorkflowCanvasProps {
+    workflowId: string
+}
+
+function WorkflowCanvas({ workflowId }: WorkflowCanvasProps) {
+    const [initialGraph] = useState(() => loadWorkflowGraph(workflowId));
+    const [nodes, setNodes, onNodesChange] = useNodesState<PalmTreeNode>(initialGraph?.nodes ?? initialNodes);
+    const [edges, setEdges, onEdgesChange] = useEdgesState(initialGraph?.edges ?? initialEdges);
 
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
     const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? null;
@@ -123,33 +129,65 @@ function WorkflowCanvas() {
         setNodes((currentNodes) => [...currentNodes, newNode])
     }
 
+    const [saveStatus, setSaveStatus] = useState('')
+    const [savedSnapshot, setSavedSnapshot] = useState(() => JSON.stringify({
+        nodes: initialGraph?.nodes ?? initialNodes,
+        edges: initialGraph?.edges ?? initialEdges
+    }))
+    const currentSnapshot = JSON.stringify({ nodes, edges })
+    const hasUnsavedChanges = currentSnapshot !== savedSnapshot
+
+    useEffect(() => {
+        document.title = hasUnsavedChanges ? '* Unsaved Change - Palm Tree' : 'Palm Tree'
+    }, [hasUnsavedChanges])
+
+    const handleSave = () => {
+        try {
+            saveWorkflowGraph(workflowId, {nodes, edges})
+            setSavedSnapshot(JSON.stringify({ nodes, edges }))
+            setSaveStatus('Saved successfully!')
+        } catch {
+            setSaveStatus('Failed to save workflow.')
+        }
+    }
+
     return (
-        <div className="workflow-editor">
-            <NodePalette onAddNode={addNode} />
-            <div className="workflow-canvas">
-                <ReactFlow 
-                    nodes={nodes} 
-                    edges={edges} 
-                    nodeTypes={nodeTypes}
-                    onNodesChange={onNodesChange} 
-                    onEdgesChange={onEdgesChange} 
-                    onConnect={onConnect} 
-                    fitView
-                    onNodeClick={(_, node) => setSelectedNodeId(node.id)}
-                    onPaneClick={() => setSelectedNodeId(null)}
-                    onNodesDelete={(deletedNodes) => {
-                        if (deletedNodes.some((node) => node.id === selectedNodeId)) {
-                            setSelectedNodeId(null)
-                        }
-                    }}
-                >
-                    <Background />
-                    <Controls />
-                    <MiniMap />
-                </ReactFlow>
+        <div className="workflow-editor-container">
+            <div className="workflow-toolbar">
+                <span role="status">
+                    {hasUnsavedChanges ? 'Unsaved changes' : saveStatus || 'All changes saved'}
+                </span>
+
+                <button type="button" className="primary-button" onClick={handleSave} disabled={!hasUnsavedChanges}>
+                    Save Workflow
+                </button>
             </div>
-            <NodeConfigPanel node={selectedNode} onUpdateNode={updateNode} onDeleteNode={deleteNode} />
-            
+            <div className="workflow-editor">
+                <NodePalette onAddNode={addNode} />
+                <div className="workflow-canvas">
+                    <ReactFlow<PalmTreeNode, Edge>
+                        nodes={nodes}
+                        edges={edges}
+                        nodeTypes={nodeTypes}
+                        onNodesChange={onNodesChange}
+                        onEdgesChange={onEdgesChange}
+                        onConnect={onConnect}
+                        onNodeClick={(_, node) => setSelectedNodeId(node.id)}
+                        onPaneClick={() => setSelectedNodeId(null)}
+                        onNodesDelete={(deletedNodes) => {
+                            if (deletedNodes.some((node) => node.id === selectedNodeId)) {
+                                setSelectedNodeId(null)
+                            }
+                        }}
+                        fitView
+                    >
+                        <Background />
+                        <Controls />
+                        <MiniMap />
+                    </ReactFlow>
+                </div>
+                <NodeConfigPanel node={selectedNode} onUpdateNode={updateNode} onDeleteNode={deleteNode} />
+            </div>
         </div>
     )
 }

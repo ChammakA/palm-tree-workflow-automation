@@ -411,3 +411,24 @@ select {
 .workflow-node:focus-within {
   border-color: #2563eb;
 }
+
+.workflow-editor-container {
+  width: 100%;
+}
+
+.workflow-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.workflow-toolbar span {
+  color: #059669;
+  font-size: 13px;
+}
+
+.workflow-editor {
+  height: 600px;
+}

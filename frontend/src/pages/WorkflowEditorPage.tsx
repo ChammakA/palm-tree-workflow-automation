@@ -6,7 +6,7 @@ function WorkflowEditorPage() {
     const { workflowId } = useParams()
     const workflow = mockWorkflows.find((w) => w.id === workflowId)
 
-    if (!workflow) {
+    if (!workflow || !workflowId) {
         return (
             <div className="page">
                 <h2>Workflow not found.</h2>
@@ -24,7 +24,7 @@ function WorkflowEditorPage() {
                 <h2>{workflow.name}</h2>
                 <p>{workflow.description}</p>
             </div>
-            <WorkflowCanvas />
+            <WorkflowCanvas key={workflowId} workflowId={workflowId} />
         </div>
     )
 }
