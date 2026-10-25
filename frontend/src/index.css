@@ -432,3 +432,23 @@ select {
 .workflow-editor {
   height: 600px;
 }
+
+.create-workflow-form {
+  max-width: 500px;
+  padding: 24px;
+  margin-bottom: 24px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.create-workflow-form h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.create-workflow-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}

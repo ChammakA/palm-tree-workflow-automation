@@ -5,10 +5,18 @@ using PalmTree.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173").AllowAnyHeader().AllowAnyMethod();
+    });
+});
 builder.Services.AddDbContext<PalmTreeDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<WorkflowService>();
 
 var app = builder.Build();
+app.UseCors("ReactFrontend");
 
 app.MapGet("/api/health", () =>
 {
