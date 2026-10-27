@@ -1,5 +1,6 @@
 using PalmTree.Api.Data;
 using PalmTree.Api.Models;
+using System.Text.Json;
 
 namespace PalmTree.Api.Services;
 
@@ -59,6 +60,40 @@ public class WorkflowService
 
         _context.Workflows.Remove(workflow);
         _context.SaveChanges();
+        return true;
+    }
+
+    public WorkflowGraphDto? GetGraph(string id)
+    {
+        var workflow = _context.Workflows.Find(id);
+
+        if (workflow is null)
+        {
+            return null;
+        }
+
+        return new WorkflowGraphDto
+        {
+            Nodes = JsonSerializer.Deserialize<JsonElement>(workflow.NodesJson),
+            Edges = JsonSerializer.Deserialize<JsonElement>(workflow.EdgesJson)
+        };
+    }
+
+    public bool SaveGraph(string id, WorkflowGraphDto graph)
+    {
+        var workflow = _context.Workflows.Find(id);
+
+        if (workflow is null)
+        {
+            return false;
+        }
+
+        workflow.NodesJson = graph.Nodes.GetRawText();
+        workflow.EdgesJson = graph.Edges.GetRawText();
+        workflow.UpdatedAt = DateTime.UtcNow;
+
+        _context.SaveChanges();
+
         return true;
     }
 }

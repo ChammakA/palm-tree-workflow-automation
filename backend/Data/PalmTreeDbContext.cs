@@ -9,4 +9,13 @@ public class PalmTreeDbContext : DbContext
     {}
 
     public DbSet<Workflow> Workflows => Set<Workflow>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Workflow>(entity =>
+        {
+            entity.Property(w => w.NodesJson).HasColumnType("jsonb");
+            entity.Property(w => w.EdgesJson).HasColumnType("jsonb");
+        });
+    }
 }

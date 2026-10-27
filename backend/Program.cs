@@ -67,4 +67,20 @@ workflows.MapDelete("/{id}", (string id, WorkflowService service) =>
     return service.Delete(id) ? Results.NoContent() : Results.NotFound();
 });
 
+workflows.MapGet("/{id}/graph", (string id, WorkflowService service) =>
+{
+    var graph = service.GetGraph(id);
+    return graph is null ? Results.NotFound() : Results.Ok(graph);
+});
+
+workflows.MapPut("/{id}/graph", (string id, WorkflowGraphDto graph, WorkflowService service) =>
+{
+    if (graph.Nodes.ValueKind != System.Text.Json.JsonValueKind.Array || graph.Edges.ValueKind != System.Text.Json.JsonValueKind.Array)
+    {
+        return Results.BadRequest("Nodes and edges must be arrays.");
+    }
+
+    return service.SaveGraph(id, graph) ? Results.NoContent() : Results.NotFound();
+});
+
 app.Run();
