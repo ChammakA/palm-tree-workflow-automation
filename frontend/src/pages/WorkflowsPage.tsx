@@ -1,11 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { getWorkflows, createWorkflow, type WorkflowDto } from '../features/workflows/api/workflowApi'
+import { getWorkflows, deleteWorkflow, createWorkflow, type WorkflowDto } from '../features/workflows/api/workflowApi'
 
 function WorkflowsPage() {
     const [workflows, setWorkflows] = useState<WorkflowDto[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [deletingId, setDeletingId] = useState<string | null>(null)
+    const [deleteError, setDeleteError] = useState<string | null>(null)
 
     const navigate = useNavigate()
     const [showCreateForm, setShowCreateForm] = useState(false)
@@ -38,6 +40,24 @@ function WorkflowsPage() {
             active = false
         }
     }, [])
+
+    const handleDeleteWorkflow = async (workflow: WorkflowDto) => {
+        const confirmed = window.confirm(`Are you sure you want to delete "${workflow.name}"? This cannot be undone.`)
+
+        if (!confirmed) return
+
+        setDeletingId(workflow.id)
+        setDeleteError(null)
+
+        try {
+            await deleteWorkflow(workflow.id)
+            setWorkflows((current) => current.filter((item) => item.id !== workflow.id))
+        } catch {
+            setDeleteError('Failed to delete workflow. Please try again.')
+        } finally {
+            setDeletingId(null)
+        }
+    }
 
     const handleCreateWorkflow = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -101,15 +121,22 @@ function WorkflowsPage() {
                 </form>
             )}
 
+            {deleteError && <p role='alert'>{deleteError}</p>}
             <div className="workflow-list">
                 {workflows.map((workflow) => (
-                    <Link key={workflow.id} to={`/workflows/${workflow.id}`} className="workflow-card">
-                        <div>
-                            <h3>{workflow.name}</h3>
-                            <p>{workflow.description}</p>
-                        </div>
-                        <span>Open</span>
-                    </Link>
+                    <div key={workflow.id} className='workflow-card'>
+                        <Link to={`/workflows/${workflow.id}`} className='workflow-card-link'>
+                            <div>
+                                <h3>{workflow.name}</h3>
+                                <p>{workflow.description}</p>
+                            </div>
+                            <span>Open</span>
+                        </Link>
+
+                        <button type='button' className='delete-workflow-button' onClick={() => handleDeleteWorkflow(workflow)} disabled={deletingId !== null}>
+                            {deletingId === workflow.id ? 'Deleting...' : 'Delete'}
+                        </button>
+                    </div>
                 ))}
             </div>
         </div>

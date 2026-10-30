@@ -68,3 +68,12 @@ export async function updateWorkflowGraph(id: string, graph: SavedWorkflowGraph)
         throw new Error('Failed to save workflow graph')
     }
 }
+
+export async function deleteWorkflow(id: string): Promise<void> {
+    const response = await fetch(`${API_URL}/${encodeURIComponent(id)}`, {method: 'DELETE'})
+
+    if (!response.ok)
+    {
+        throw new Error('Failed to delete workflow')
+    }
+}
