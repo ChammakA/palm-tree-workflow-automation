@@ -481,3 +481,22 @@ select {
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+.workflow-validation-errors {
+    margin-bottom: 16px;
+    padding: 16px;
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+    border-radius: 8px;
+    color: #9a3412;
+}
+
+.workflow-validation-errors ul {
+    margin-bottom: 0;
+}
+
+.workflow-validation-success {
+    margin-bottom: 16px;
+    color: #047857;
+    font-weight: 500;
+}

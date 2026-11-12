@@ -6,6 +6,7 @@ import NodePalette from './NodePalette';
 import type { WorkflowNodeData, WorkflowNodeType } from '../types/workflowNode';
 import type { PalmTreeNode } from '../utils/workflowStorage';
 import { getWorkflowGraph, updateWorkflowGraph } from '../api/workflowApi';
+import { validateWorkflow } from '../utils/validateWorkflow';
 
 import { useState, useEffect } from 'react';
 import NodeConfigPanel from './NodeConfigPanel';
@@ -68,7 +69,14 @@ function WorkflowCanvas({ workflowId }: WorkflowCanvasProps) {
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
     const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? null;
 
+    const [hasValidated, setHasValidated] = useState(false)
+    const validationErrors = hasValidated ? validateWorkflow(nodes, edges) : []
+    const handleValidate = () => {
+        setHasValidated(true)
+    }
+
     const updateNode = (id: string, updates: Partial<WorkflowNodeData>) => {
+        if (saving) return
         setNodes((currentNodes) => currentNodes.map((node) => node.id === id ? {
             ...node,
             data: {
@@ -79,16 +87,19 @@ function WorkflowCanvas({ workflowId }: WorkflowCanvasProps) {
     }
 
     const deleteNode = (id: string) => {
+        if (saving) return
         setNodes((currentNodes) => currentNodes.filter((node) => node.id !== id))
         setEdges((currentEdges) => currentEdges.filter((edge) => edge.source !== id && edge.target !== id))
         setSelectedNodeId(null)
     }
 
     const onConnect = (connection: Connection) => {
+        if (saving) return
         setEdges((currentEdges) => addEdge(connection, currentEdges));
     }
 
     const addNode = (nodeType: WorkflowNodeType) => {
+        if (saving) return
         const defaults = nodeDefaults[nodeType];
 
         const newNode: PalmTreeNode = {
@@ -118,6 +129,10 @@ function WorkflowCanvas({ workflowId }: WorkflowCanvasProps) {
 
             try {
                 const graph = await getWorkflowGraph(workflowId)
+
+                if (!Array.isArray(graph.nodes) || !Array.isArray(graph.edges)) {
+                    throw new Error('Invalid workflow graph returned by API.')
+                }
 
                 if (!active) return
 
@@ -185,10 +200,29 @@ function WorkflowCanvas({ workflowId }: WorkflowCanvasProps) {
                     {saveStatus.startsWith('Failed') ? saveStatus : hasUnsavedChanges ? 'Unsaved changes' : saveStatus || 'All changes saved'}
                 </span>
 
+                <button type="button" onClick={handleValidate} disabled={saving}>
+                    Validate Workflow
+                </button>
+
                 <button type="button" className="primary-button" onClick={handleSave} disabled={!hasUnsavedChanges || saving || loading || !!loadError}>
                     {saving ? 'Saving...' : 'Save Workflow'}
                 </button>
             </div>
+            {validationErrors.length > 0 && (
+                <div className="workflow-validation-errors" role="alert">
+                    <strong>Validation issues:</strong>
+                    <ul>
+                        {validationErrors.map((error, index) => (
+                            <li key={index}>{error}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+            {hasValidated && validationErrors.length === 0 && (
+                <p role="status" className="workflow-validation-success">
+                    Workflow passed the current validation checks.
+                </p>
+            )}
             <div className="workflow-editor">
                 <NodePalette onAddNode={addNode} />
                 <div className="workflow-canvas">
