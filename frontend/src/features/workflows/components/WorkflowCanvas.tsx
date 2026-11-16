@@ -5,7 +5,7 @@ import WorkflowNode from './nodes/WorkflowNode';
 import NodePalette from './NodePalette';
 import type { WorkflowNodeData, WorkflowNodeType } from '../types/workflowNode';
 import type { PalmTreeNode } from '../utils/workflowStorage';
-import { getWorkflowGraph, updateWorkflowGraph } from '../api/workflowApi';
+import { getWorkflowGraph, updateWorkflowGraph, runWorkflow } from '../api/workflowApi';
 import { validateWorkflow } from '../utils/validateWorkflow';
 
 import { useState, useEffect } from 'react';
@@ -65,6 +65,9 @@ function WorkflowCanvas({ workflowId }: WorkflowCanvasProps) {
     const [loading, setLoading] = useState(true)
     const [loadError, setLoadError] = useState<string | null>(null)
     const [saving, setSaving] = useState(false)
+
+    const [running, setRunning] = useState(false)
+    const [runResult, setRunResult] = useState<string | null>(null)
 
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
     const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? null;
@@ -193,6 +196,28 @@ function WorkflowCanvas({ workflowId }: WorkflowCanvasProps) {
         )
     }
 
+    const handleRun = async () => {
+        if (running || saving || hasUnsavedChanges) return
+
+        const errors = validateWorkflow(nodes, edges)
+        if (errors.length > 0) {
+            setHasValidated(true)
+            return
+        }
+
+        setRunning(true)
+        setRunResult(null)
+
+        try {
+            const execution = await runWorkflow(workflowId)
+            setRunResult(execution.status === 'Completed' ? 'Workflow executed successfully.' : `Execution failed: ${execution.errorMessage}`)
+        } catch {
+            setRunResult('Failed to execute workflow.')
+        } finally {
+            setRunning(false)
+        }
+    }
+
     return (
         <div className="workflow-editor-container">
             <div className="workflow-toolbar">
@@ -204,10 +229,16 @@ function WorkflowCanvas({ workflowId }: WorkflowCanvasProps) {
                     Validate Workflow
                 </button>
 
+                <button type="button" onClick={handleRun} disabled={running || saving || hasUnsavedChanges}>
+                    {running ? 'Running...' : 'Run Workflow'}
+                </button>
+
                 <button type="button" className="primary-button" onClick={handleSave} disabled={!hasUnsavedChanges || saving || loading || !!loadError}>
                     {saving ? 'Saving...' : 'Save Workflow'}
                 </button>
             </div>
+            {runResult && <p role="status">{runResult}</p>}
+            
             {validationErrors.length > 0 && (
                 <div className="workflow-validation-errors" role="alert">
                     <strong>Validation issues:</strong>

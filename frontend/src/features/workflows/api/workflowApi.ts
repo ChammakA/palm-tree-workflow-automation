@@ -77,3 +77,31 @@ export async function deleteWorkflow(id: string): Promise<void> {
         throw new Error('Failed to delete workflow')
     }
 }
+
+export interface WorkflowExecutionDto {
+    id: string
+    workflowId: string
+    status: string
+    startedAt: string
+    completedAt: string | null
+    errorMessage: string | null
+    stepsJson: string
+}
+
+export async function runWorkflow(id: string): Promise<WorkflowExecutionDto> {
+    const response = await fetch(`${API_URL}/${encodeURIComponent(id)}/run`, {method: 'POST'})
+
+    if (!response.ok) {
+        throw new Error('Failed to start workflow.')
+    }
+    return response.json()
+}
+
+export async function getWorkflowExecutions(id: string): Promise<WorkflowExecutionDto[]> {
+    const response = await fetch(`${API_URL}/${encodeURIComponent(id)}/executions`)
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch executions.')
+    }
+    return response.json()
+}

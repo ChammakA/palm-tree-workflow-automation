@@ -14,6 +14,7 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddDbContext<PalmTreeDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<WorkflowService>();
+builder.Services.AddScoped<WorkflowExecutionService>();
 
 var app = builder.Build();
 app.UseCors("ReactFrontend");
@@ -81,6 +82,17 @@ workflows.MapPut("/{id}/graph", (string id, WorkflowGraphDto graph, WorkflowServ
     }
 
     return service.SaveGraph(id, graph) ? Results.NoContent() : Results.NotFound();
+});
+
+workflows.MapPost("/{id}/run", async (string id, WorkflowExecutionService service) =>
+{
+    var execution = await service.RunAsync(id);
+    return execution is null ? Results.NotFound() : Results.Ok(execution);
+});
+
+workflows.MapGet("/{id}/executions", async (string id, WorkflowExecutionService service) =>
+{
+    return Results.Ok(await service.GetHistoryAsync(id));
 });
 
 app.Run();
