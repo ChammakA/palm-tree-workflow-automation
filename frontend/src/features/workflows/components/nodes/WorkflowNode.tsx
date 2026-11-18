@@ -24,9 +24,14 @@ function WorkflowNode({ data}: NodeProps<PalmTreeNode>) {
                 </div>
             )}
 
-            {data.nodeType !== 'action' && (
+            {data.nodeType === 'condition' ? (
+                <>
+                    <Handle type="source" id="true" position={Position.Right} style={{ top: '35%', background: '#059669' }}/>
+                    <Handle type="source" id="false" position={Position.Right} style={{ top: '70%', background: '#dc2626' }}/>
+                </>
+            ) : data.nodeType !== 'action' ? (
                 <Handle type="source" position={Position.Right} />
-            )}
+            ) : null}
         </div>
     )
 }

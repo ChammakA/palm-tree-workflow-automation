@@ -42,6 +42,7 @@ public class WorkflowExecutionService
             var nodeById = nodes.ToDictionary(n => n.GetProperty("id").GetString())!;
             var outgoing = edges.GroupBy(e => e.GetProperty("source").GetString()!).ToDictionary(g => g.Key, g => g.ToList());
             var visited = new HashSet<string>();
+            var variables = new Dictionary<string, string>();
             var current = triggers[0];
 
             while (true)
@@ -51,30 +52,91 @@ public class WorkflowExecutionService
                     throw new InvalidOperationException("Circular connection detected.");
 
                 var type = current.GetProperty("type").GetString()!;
-                if (type != "trigger" && type != "action")
-                    throw new InvalidOperationException($"Node type '{type}' is not executable yet.");
+                if (!current.TryGetProperty("data", out var data))
+                    throw new InvalidOperationException($"Node '{id}' is missing configuration.");
+
+                string ReadSetting(string name)
+                {
+                    return data.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() ?? "" : "";
+                }
+
+                var variableName = ReadSetting("variableName").Trim();
+                var variableValue = ReadSetting("variableValue");
+
+                bool? conditionResult = null;
+
+                switch (type)
+                {
+                    case "trigger":
+                    case "action":
+                        if (!string.IsNullOrWhiteSpace(variableName))
+                        {
+                            variables[variableName] = variableValue;
+                        }
+                        else if (type == "action")
+                        {
+                            throw new InvalidOperationException("Action requires a variable name.");
+                        }
+                        break;
+                    case "condition":
+                        if (string.IsNullOrWhiteSpace(variableName))
+                            throw new InvalidOperationException("Condition requires a variable name.");
+                        if (!variables.TryGetValue(variableName, out var actual))
+                            throw new InvalidOperationException($"Variable '{variableName}' is not defined.");
+
+                        var expected = ReadSetting("expectedValue");
+                        var op = ReadSetting("operator");
+
+                        conditionResult = op switch
+                        {
+                            "" or "equals" => actual == expected,
+                            "notEquals" => actual != expected,
+                            _ => throw new InvalidOperationException($"Unsupported operator '{op}'.")
+                        };
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Node type '{type}' is not executable yet.");
+                }
 
                 steps.Add(new
                 {
                     nodeId = id,
                     nodeType = type,
                     status = "Completed",
+                    conditionResult,
+                    variables = new Dictionary<string, string>(variables),
                     executedAt = DateTime.UtcNow
                 });
 
                 var nextEdges = outgoing.GetValueOrDefault(id) ?? new List<JsonElement>();
-                if (nextEdges.Count == 0) break;
-                if (nextEdges.Count > 1)
-                    throw new InvalidOperationException("Branching is not supported yet.");
                 
+                if (type == "condition")
+                {
+                    if (nextEdges.Count != 2 || nextEdges.Any(e => !e.TryGetProperty("sourceHandle", out var h) || h.ValueKind != JsonValueKind.String ||
+                                                                (h.GetString() != "true" && h.GetString() != "false")) || 
+                                                                nextEdges.Select(e => e.GetProperty("sourceHandle").GetString()).Distinct().Count() != 2)
+                    {
+                        throw new InvalidOperationException("Condition requires exactly one True and one False connection.");
+                    }
+
+                    var selectedHandle = conditionResult == true ? "true" : "false";
+
+                    nextEdges = nextEdges.Where(e => e.GetProperty("sourceHandle").GetString() == selectedHandle).ToList();
+                }
+                else if (nextEdges.Count > 1)
+                {
+                    throw new InvalidOperationException("Only Condition node can have multiple outpupts.");
+                }
+
+                if (nextEdges.Count == 0) break;
+
                 var nextId = nextEdges[0].GetProperty("target").GetString()!;
+
                 if (!nodeById.TryGetValue(nextId, out var next))
                     throw new InvalidOperationException("Connection references a missing node.");
                 current = next;
             }
 
-            if (visited.Count != nodes.Count)
-                throw new InvalidOperationException("Workflow contains unreachable nodes.");
             execution.Status = "Completed";
         }
         catch (Exception ex)

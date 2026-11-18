@@ -39,6 +39,42 @@ function NodeConfigPanel({ node, onUpdateNode, onDeleteNode }: NodeConfigPanelPr
                 <textarea id="node-description" rows={4} value={node.data.description ?? ''} onChange={(e) => onUpdateNode(node.id, { description: e.target.value})} />
             </div>
 
+            {(node.type === 'trigger' || node.type === 'action') && (
+                <>
+                    <div className="form-group">
+                        <label>Variable Name</label>
+                        <input value={node.data.variableName ?? ''} onChange={(e) => onUpdateNode(node.id, { variableName: e.target.value})} placeholder="e.g. amount" />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Variable Value</label>
+                        <input value={node.data.variableValue ?? ''} onChange={(e) => onUpdateNode(node.id, { variableValue: e.target.value})} placeholder="e.g. 100" />
+                    </div>
+                </>
+            )}
+
+            {node.type === 'condition' && (
+                <>
+                    <div className="form-group">
+                        <label>Variable to Check</label>
+                        <input value={node.data.variableName ?? ''} onChange={(e) => onUpdateNode(node.id, { variableName: e.target.value})} placeholder="e.g. amount" />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Operator</label>
+                        <select value={node.data.operator ?? 'equals'} onChange={(e) => onUpdateNode(node.id, { operator: e.target.value as 'equals' | 'notEquals'})}>
+                            <option value="equals">Equals</option>
+                            <option value="notEquals">Does Not Equal</option>
+                        </select>
+                    </div>
+
+                    <div className="form-group">
+                        <label>Expected Value</label>
+                        <input value={node.data.expectedValue ?? ''} onChange={(e) => onUpdateNode(node.id, { expectedValue: e.target.value})} placeholder="e.g. 100" />
+                    </div>
+                </>
+            )}
+
             <button className="delete-node-button" type="button" onClick={() => onDeleteNode(node.id)}>Delete Node</button>
         </aside>
     )

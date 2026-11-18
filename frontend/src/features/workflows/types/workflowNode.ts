@@ -8,4 +8,8 @@ export interface WorkflowNodeData extends Record<string, unknown> {
     label: string
     nodeType: WorkflowNodeType
     description?: string
+    variableName?: string
+    variableValue?: string
+    operator?: 'equals' | 'notEquals'
+    expectedValue?: string
 }
