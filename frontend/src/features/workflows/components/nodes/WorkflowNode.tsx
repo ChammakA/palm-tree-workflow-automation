@@ -24,7 +24,7 @@ function WorkflowNode({ data}: NodeProps<PalmTreeNode>) {
                 </div>
             )}
 
-            {data.nodeType === 'condition' ? (
+            {data.nodeType === 'condition' || data.nodeType === 'approval' ? (
                 <>
                     <Handle type="source" id="true" position={Position.Right} style={{ top: '35%', background: '#059669' }}/>
                     <Handle type="source" id="false" position={Position.Right} style={{ top: '70%', background: '#dc2626' }}/>

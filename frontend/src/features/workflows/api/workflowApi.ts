@@ -105,3 +105,20 @@ export async function getWorkflowExecutions(id: string): Promise<WorkflowExecuti
     }
     return response.json()
 }
+
+export async function decideWorkflowExecution(workflowId: string, executionId: string, approved: boolean): Promise<WorkflowExecutionDto> {
+    const response = await fetch(`${API_URL}/${encodeURIComponent(workflowId)}/executions/${encodeURIComponent(executionId)}/decision`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({approved})
+    })
+
+    if (!response.ok) {
+        const result = await response.json().catch(() => null)
+        throw new Error(result?.error ?? 'Failed to submit decision.')
+    }
+
+    return response.json();
+}

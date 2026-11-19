@@ -22,6 +22,7 @@ public class PalmTreeDbContext : DbContext
         {
             entity.Property(e => e.StepsJson).HasColumnType("jsonb");
             entity.HasIndex(e => e.WorkflowId);
+            entity.Property(e => e.VariablesJson).HasColumnType("jsonb");
         });
     }
 

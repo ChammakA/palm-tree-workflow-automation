@@ -10,6 +10,7 @@ import { validateWorkflow } from '../utils/validateWorkflow';
 
 import { useState, useEffect } from 'react';
 import NodeConfigPanel from './NodeConfigPanel';
+import ExecutionHistory from './ExecutionHistory';
 
 const nodeTypes = {
     trigger: WorkflowNode,
@@ -67,6 +68,7 @@ function WorkflowCanvas({ workflowId }: WorkflowCanvasProps) {
     const [saving, setSaving] = useState(false)
 
     const [running, setRunning] = useState(false)
+    const [historyRefreshKey, setHistoryRefreshKey] = useState(0)
     const [runResult, setRunResult] = useState<string | null>(null)
 
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -210,7 +212,10 @@ function WorkflowCanvas({ workflowId }: WorkflowCanvasProps) {
 
         try {
             const execution = await runWorkflow(workflowId)
-            setRunResult(execution.status === 'Completed' ? 'Workflow executed successfully.' : `Execution failed: ${execution.errorMessage}`)
+            setHistoryRefreshKey(current => current + 1)
+            setRunResult(execution.status === 'Completed' ? 'Workflow executed successfully.' : execution.status === 'WaitingForApproval' 
+                        ? 'Workflow paused. Waiting for approval.'
+                        : `Execution failed: ${execution.errorMessage ?? 'Unknown error'}`)
         } catch {
             setRunResult('Failed to execute workflow.')
         } finally {
@@ -284,6 +289,7 @@ function WorkflowCanvas({ workflowId }: WorkflowCanvasProps) {
                 </div>
                 <NodeConfigPanel node={selectedNode} onUpdateNode={updateNode} onDeleteNode={deleteNode} />
             </div>
+            <ExecutionHistory workflowId={workflowId} refreshKey={historyRefreshKey}/>
         </div>
     )
 }

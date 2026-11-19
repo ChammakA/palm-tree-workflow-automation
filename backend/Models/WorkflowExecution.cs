@@ -9,4 +9,6 @@ public class WorkflowExecution
     public DateTime? CompletedAt { get; set; }
     public string? ErrorMessage { get; set; }
     public string StepsJson { get; set; } = "[]";
+    public string? PendingApprovalNodeId { get; set; }
+    public string VariablesJson { get; set; } = "{}";
 }

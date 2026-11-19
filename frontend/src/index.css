@@ -500,3 +500,99 @@ select {
     color: #047857;
     font-weight: 500;
 }
+
+.execution-history {
+    margin-top: 32px;
+    padding: 24px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+}
+
+.execution-history h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.execution-history-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.execution-history-item summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px;
+    cursor: pointer;
+    background: #f9fafb;
+}
+
+.execution-history-item summary:hover {
+    background: #f3f4f6;
+}
+
+.execution-history-details {
+    padding: 20px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.execution-step {
+    padding: 14px;
+    margin-top: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+}
+
+.execution-step span {
+    margin-left: 12px;
+    color: #059669;
+}
+
+.execution-step pre {
+    padding: 12px;
+    background: #f3f4f6;
+    border-radius: 6px;
+    overflow-x: auto;
+}
+
+.execution-error {
+    padding: 12px;
+    background: #fef2f2;
+    color: #b91c1c;
+    border-radius: 6px;
+}
+
+.approval-actions {
+    margin: 20px 0;
+    padding: 16px;
+    border: 1px solid #e9d5ff;
+    border-radius: 8px;
+    background: #faf5ff;
+}
+
+.approval-actions button {
+    padding: 10px 16px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+}
+
+.approval-approve-button {
+    background: #059669;
+}
+
+.approval-reject-button {
+    background: #dc2626;
+}
+
+.approval-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+

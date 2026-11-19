@@ -95,4 +95,19 @@ workflows.MapGet("/{id}/executions", async (string id, WorkflowExecutionService 
     return Results.Ok(await service.GetHistoryAsync(id));
 });
 
+workflows.MapPost("/{id}/executions/{executionId}/decision", async (string id, string executionId, ApprovalDecisionDto decision, WorkflowExecutionService service) =>
+{
+    try
+    {
+        var execution = await service.DecideAsync(id, executionId, decision.Approved);
+        return execution is null ? Results.NotFound() : Results.Ok(execution);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.Conflict(new { error = ex.Message });
+    }
+});
+
 app.Run();
+
+public record ApprovalDecisionDto(bool Approved);
